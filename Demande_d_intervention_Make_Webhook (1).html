@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demande d'intervention</title>
+    <style>
+        body {
+            font-family: 'Calibri Light', Arial, sans-serif;
+            background-color: #f0f2f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+        }
+        .request-number {
+            margin-top: -30px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #d9534f;
+            text-align: right;
+        }
+        h1 {
+            color: #2a4365;
+            text-align: center;
+            font-size: 32px;
+        }
+        h2 {
+            color: #2b6cb0;
+            margin-top: 30px;
+            border-bottom: 2px solid #2b6cb0;
+            padding-bottom: 5px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+            color: #2a4365;
+        }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="date"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #a0aec0;
+            border-radius: 8px;
+        }
+        input[readonly] {
+            background-color: #e9ecef;
+        }
+        button {
+            background-color: #2b6cb0;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 30px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #2c5282;
+        }
+        .note {
+            font-size: 12px;
+            color: #d9534f;
+            margin-top: 5px;
+        }
+    </style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const requestNumber = 'REQ-' + Math.floor(Math.random() * 1000000);
+        document.getElementById('request_number_display').textContent = 'Numéro de demande : ' + requestNumber;
+        document.getElementById('request_number_field').value = requestNumber;
+
+        const dateInput = document.getElementById('date_intervention');
+        const today = new Date();
+        const minDate = new Date(today);
+        minDate.setDate(minDate.getDate() + 15);
+
+        function isWeekendOrHoliday(date) {
+            const day = date.getDay();
+            const holidays = [
+                new Date(date.getFullYear(), 0, 1),
+                new Date(date.getFullYear(), 4, 1),
+                new Date(date.getFullYear(), 4, 8),
+                new Date(date.getFullYear(), 6, 14),
+                new Date(date.getFullYear(), 7, 15),
+                new Date(date.getFullYear(), 10, 1),
+                new Date(date.getFullYear(), 10, 11),
+                new Date(date.getFullYear(), 11, 25)
+            ];
+            return day === 0 || day === 6 || holidays.some(holiday => date.toDateString() === holiday.toDateString());
+        }
+
+        function setMinValidDate() {
+            let currentDate = new Date(minDate);
+            while (isWeekendOrHoliday(currentDate)) {
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            dateInput.min = currentDate.toISOString().split('T')[0];
+        }
+
+        setMinValidDate();
+
+        // Autofill and disable contact fields if checkbox is checked
+        document.getElementById('same_contact').addEventListener('change', function() {
+            const isChecked = this.checked;
+            const nomContact = document.getElementById('nom_contact');
+            const telContact = document.getElementById('telephone_contact');
+            const emailContact = document.getElementById('email_contact');
+
+            if (isChecked) {
+                nomContact.value = document.getElementById('nom_prenom').value;
+                telContact.value = document.getElementById('telephone').value;
+                emailContact.value = document.getElementById('mail').value;
+
+                nomContact.readOnly = true;
+                telContact.readOnly = true;
+                emailContact.readOnly = true;
+            } else {
+                nomContact.value = "";
+                telContact.value = "";
+                emailContact.value = "";
+
+                nomContact.readOnly = false;
+                telContact.readOnly = false;
+                emailContact.readOnly = false;
+            }
+        });
+
+        // Validation du formulaire avant soumission
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const requiredFields = document.querySelectorAll('input, textarea, select');
+            let valid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    valid = false;
+                    field.style.border = '2px solid #d9534f';
+                } else {
+                    field.style.border = '1px solid #a0aec0';
+                }
+            });
+
+            if (!valid) {
+                alert("Veuillez remplir tous les champs du formulaire avant de soumettre.");
+                event.preventDefault();
+            }
+        });
+    });
+</script>
+</head>
+<body>
+    <div class="container">
+        <div id="request_number_display" class="request-number"></div>
+        
+        <h1>Demande d'intervention</h1>
+        <form action="https://hook.eu2.make.com/w4vwrvlwl4e8ye6q3550602uf5f4h33v" method="POST">
+            <input type="hidden" id="request_number_field" name="request_number">
+
+            <h2>Initiateur de la demande</h2>
+            <label for="societe">Société :</label>
+            <input type="text" id="societe" name="societe" placeholder="" required>
+
+            <label for="num_commande">Numéro de commande :</label>
+            <input type="text" id="num_commande" name="num_commande" placeholder="" required>
+            <div class="note">Aucune information ne sera traitée sans le numéro de commande.</div>
+
+            <label for="nom_prenom">Nom Prénom :</label>
+            <input type="text" id="nom_prenom" name="nom_prenom" placeholder="" required>
+
+            <label for="telephone">Téléphone :</label>
+            <input type="tel" id="telephone" name="telephone" placeholder="" required>
+
+            <label for="mail">Mail :</label>
+            <input type="email" id="mail" name="mail" placeholder="" required>
+
+            <label for="date_intervention">Date de l'intervention souhaitée :</label>
+            <input type="date" id="date_intervention" name="date_intervention" required>
+
+            <h2>Lieu d'intervention</h2>
+            <label for="lieu_societe">Société :</label>
+            <input type="text" id="lieu_societe" name="lieu_societe" placeholder="" required>
+
+            <label for="code_postal">Code Postal :</label>
+            <input type="text" id="code_postal" name="code_postal" placeholder="" required>
+
+            <label for="type_intervention">Type d'Intervention :</label>
+            <select id="type_intervention" name="type_intervention" required>
+                <option value="">Choisir une option</option>
+                <option value="Garantie">Garantie</option>
+                <option value="Mise en service">Mise en service</option>
+                <option value="Contrat de maintenance">Contrat de maintenance</option>
+                <option value="Dépannage">Dépannage</option>
+                <option value="Levée de réserve">Levée de réserve</option>
+            </select>
+
+            <label for="installation_service">L'installation est-elle en service ? :</label>
+            <select id="installation_service" name="installation_service" required>
+                <option value="">Choisir une option</option>
+                <option value="Oui">Oui</option>
+                <option value="Non">Non</option>
+                <option value="Non applicable">Non applicable</option>
+            </select>
+
+            <label for="descriptif_demande">Descriptif de la demande :</label>
+            <textarea id="descriptif_demande" name="descriptif_demande" required></textarea>
+
+            <h2>Personne à contacter sur place</h2>
+            <label>
+                <input type="checkbox" id="same_contact"> Le demandeur est également le contact sur place
+            </label>
+
+            <label for="nom_contact">Nom :</label>
+            <input type="text" id="nom_contact" name="nom_contact" placeholder="" required>
+
+            <label for="telephone_contact">Téléphone :</label>
+            <input type="tel" id="telephone_contact" name="telephone_contact" placeholder="" required>
+
+            <label for="email_contact">Email :</label>
+            <input type="email" id="email_contact" name="email_contact" placeholder="" required>
+
+            <button type="submit">Soumettre la demande</button>
+        </form>
+    </div>
+</body>
+</html>
